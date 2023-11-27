@@ -13,6 +13,7 @@ interface User {
 }
 
 export interface AuthState {
+  internetConnected: boolean;
   user: User | null;
   loading: boolean;
   authenticated: boolean;
@@ -21,6 +22,7 @@ export interface AuthState {
 }
 
 const initialState: AuthState = {
+  internetConnected: true,
   user: null,
   loading: false,
   authenticated: false,
@@ -55,17 +57,21 @@ export const signInWithFirebase = createAsyncThunk<
 
 export const signOutWithFirebase = createAsyncThunk<void, void>(
   'auth/signOut',
-  async () => {
-    await auth.signOut();
-  },
+  async () => await auth.signOut(),
 );
 
 const authSlice = createSlice({
   name: 'authentication',
   initialState,
   reducers: {
-    setAuth: (_, action: PayloadAction<AuthState>) => {
-      return action.payload;
+    setAuth: (state, action: PayloadAction<Partial<AuthState>>) => {
+      return {
+        ...state,
+        ...action.payload,
+      };
+    },
+    setInternetConnection: (state, action: PayloadAction<boolean>) => {
+      state.internetConnected = action.payload;
     },
   },
   extraReducers: builder => {
@@ -91,6 +97,11 @@ const authSlice = createSlice({
         state.loading = false;
       })
       .addCase(signOutWithFirebase.rejected, (state, action) => {
+        Toast.show({
+          type: 'error',
+          text1: 'Error Signing Out',
+          text2: action.payload as string,
+        });
         state.loading = false;
         state.error = action.payload as string;
       });
@@ -102,5 +113,7 @@ export const selectIsAuthenticated = (state: RootState) =>
   state.auth.authenticated;
 export const selectUserData = (state: RootState) => state.auth.user;
 export const selectAuth = (state: RootState) => state.auth;
+export const selectConnectivityState = (state: RootState) =>
+  state.auth.internetConnected;
 
 export default authSlice.reducer;

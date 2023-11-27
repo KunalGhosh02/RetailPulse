@@ -1,4 +1,5 @@
 import rnfAuth from '@react-native-firebase/auth';
+import rnfStorage from '@react-native-firebase/storage';
 import rnfFirestore from '@react-native-firebase/firestore';
 import { appStore } from '../src/state/store';
 import { authActions } from '../src/state/slices';
@@ -25,3 +26,5 @@ auth.onAuthStateChanged(next => {
 });
 
 export const firestore = rnfFirestore();
+
+export const cloudStorage = rnfStorage();

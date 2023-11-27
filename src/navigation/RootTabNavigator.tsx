@@ -3,8 +3,14 @@ import HomeScreen from '../screens/HomeScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import { createMaterialBottomTabNavigator } from 'react-native-paper/react-navigation';
 import { useTheme } from 'react-native-paper';
+import { ParamListBase } from '@react-navigation/native';
 
-const Tab = createMaterialBottomTabNavigator();
+export interface RootTabParamList extends ParamListBase {
+  Home: undefined;
+  Profile: undefined;
+}
+
+const Tab = createMaterialBottomTabNavigator<RootTabParamList>();
 
 export const RootTabNavigator = () => {
   const theme = useTheme();

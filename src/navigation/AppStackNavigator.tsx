@@ -1,11 +1,22 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { RootTabNavigator } from './RootTabNavigator';
+import { RootTabNavigator, RootTabParamList } from './RootTabNavigator';
 import AuthScreen from '../screens/AuthScreen';
 import { useSelector } from 'react-redux';
 import { selectIsAuthenticated } from '../state/slices';
+import ShopScreen from '../screens/StoreScreen';
+import { Shop } from '../state/slices/data';
+import { MaterialBottomTabNavigationProp } from 'react-native-paper';
+import CaptureShopScreen from '../screens/CaptureShopScreen';
 
-const Stack = createNativeStackNavigator();
+export type RootStackParamList = {
+  Root: MaterialBottomTabNavigationProp<RootTabParamList>;
+  Auth: undefined;
+  ShopDetail: { shop: Shop };
+  CaptureShop: { shopId: string };
+};
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export const AppStackNavigator = () => {
   const isSignedIn = useSelector(selectIsAuthenticated);
@@ -19,6 +30,8 @@ export const AppStackNavigator = () => {
       {isSignedIn ? (
         <>
           <Stack.Screen name="Root" component={RootTabNavigator} />
+          <Stack.Screen name="ShopDetail" component={ShopScreen} />
+          <Stack.Screen name="CaptureShop" component={CaptureShopScreen} />
         </>
       ) : (
         <>

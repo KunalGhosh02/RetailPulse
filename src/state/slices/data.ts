@@ -4,8 +4,9 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../store';
 import { firestore } from '../../../utils/firebase';
 import { FirebaseFirestoreTypes } from '@react-native-firebase/firestore';
+import Toast from 'react-native-toast-message';
 
-interface Shop {
+export interface Shop {
   id: string;
   address: string;
   area: string;
@@ -16,10 +17,11 @@ interface Shop {
 
 export interface DataState {
   data: Array<Shop>;
-  isLoading: boolean;
-  error: string | null;
+  loading: boolean;
+  error: Nullable<string>;
   progress: number;
   fetchComplete: boolean;
+  lastSynced: Nullable<string>;
 }
 
 export const fetchData = createAsyncThunk(
@@ -43,6 +45,8 @@ export const fetchData = createAsyncThunk(
         .orderBy('name', 'asc')
         .get();
 
+      const finalData: Array<Shop> = [];
+
       documentSnapshots.push(...snapshot.docs);
 
       let currentLength = snapshot.docs.length;
@@ -52,7 +56,7 @@ export const fetchData = createAsyncThunk(
         ...(doc.data() as Omit<Shop, 'id'>),
       }));
 
-      dispatch(dataActions.updateData(dataMap1));
+      finalData.push(...dataMap1);
       dispatch(dataActions.setBatchProgress(documentSnapshots.length));
 
       while (currentLength === batchSize) {
@@ -69,13 +73,18 @@ export const fetchData = createAsyncThunk(
           id: doc.id,
           ...(doc.data() as Omit<Shop, 'id'>),
         }));
-        dispatch(dataActions.updateData(dataMap2));
+        finalData.push(...dataMap2);
+        dispatch(dataActions.setFetchComplete());
         dispatch(dataActions.setBatchProgress(documentSnapshots.length));
       }
 
-      return;
+      return finalData.flat();
     } catch (error: any) {
-      console.error(error);
+      Toast.show({
+        type: 'error',
+        text1: 'Error fetching data',
+        text2: error.message,
+      });
       return rejectWithValue(error.message);
     }
   },
@@ -83,10 +92,11 @@ export const fetchData = createAsyncThunk(
 
 const initialState: DataState = {
   data: [],
-  isLoading: false,
+  loading: false,
   error: null,
   progress: 0,
   fetchComplete: false,
+  lastSynced: null,
 };
 
 const dataSlice = createSlice({
@@ -102,7 +112,8 @@ const dataSlice = createSlice({
     setFetchComplete: state => {
       return {
         ...state,
-        isLoading: false,
+        lastSynced: new Date().toISOString(),
+        loading: false,
       };
     },
     updateData: (state, action: PayloadAction<Array<Shop>>) => {
@@ -115,14 +126,20 @@ const dataSlice = createSlice({
   extraReducers: builder => {
     builder
       .addCase(fetchData.pending, state => {
-        state.isLoading = true;
+        state.loading = true;
         state.error = null;
       })
-      .addCase(fetchData.fulfilled, state => {
-        state.isLoading = false;
+      .addCase(fetchData.fulfilled, (state, action) => {
+        state.data = action.payload;
+        state.loading = false;
       })
       .addCase(fetchData.rejected, (state, action) => {
-        state.isLoading = false;
+        Toast.show({
+          type: 'error',
+          text1: 'Error fetching data',
+          text2: action.error.message ?? 'Could not fetch data',
+        });
+        state.loading = false;
         state.error = action.error.message ?? 'Could not fetch data';
       });
   },

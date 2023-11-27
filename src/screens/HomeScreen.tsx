@@ -4,21 +4,46 @@ import {
   Appbar,
   IconButton,
   List,
+  MaterialBottomTabScreenProps,
   Searchbar,
+  Text,
   useTheme,
 } from 'react-native-paper';
 import { useSelector } from 'react-redux';
 import { fetchData, selectData } from '../state/slices/data';
 import { useAppDispatch } from '../state/store';
+import { RootTabParamList } from '../navigation/RootTabNavigator';
+import Loader from '../components/Loader';
+import { getFormattedDate } from '../../utils/date';
+import { initNetInfo } from '../../utils/connectivity';
+import { selectConnectivityState } from '../state/slices';
+import OfflineModeBanner from '../components/OfflineRibbon';
 
-const HomeScreen = () => {
+type HomeScreenNavigationProps = MaterialBottomTabScreenProps<
+  RootTabParamList,
+  'Home'
+>;
+
+interface HomeScreen {
+  navigation: HomeScreenNavigationProps;
+  route: any;
+}
+
+const HomeScreen: React.FC<HomeScreenNavigationProps> = ({ navigation }) => {
   const theme = useTheme();
-
-  const { data } = useSelector(selectData);
+  const connected = useSelector(selectConnectivityState);
+  const { data, lastSynced, loading } = useSelector(selectData);
   const dispatch = useAppDispatch();
 
-  useEffect(() => {
+  const syncData = () => {
     dispatch(fetchData());
+  };
+
+  useEffect(() => {
+    initNetInfo();
+    if (!lastSynced) {
+      dispatch(fetchData());
+    }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
@@ -37,6 +62,7 @@ const HomeScreen = () => {
           title="Retail Pulse"
         />
       </Appbar.Header>
+      {!connected && <OfflineModeBanner />}
 
       <View style={{ flexDirection: 'row', marginTop: 16 }}>
         <Searchbar
@@ -57,24 +83,47 @@ const HomeScreen = () => {
             marginBottom: 0,
             backgroundColor: theme.colors.primaryContainer,
           }}
-          icon="filter"></IconButton>
+          icon="filter"
+        />
+        <IconButton
+          style={{
+            flex: 0,
+            height: 60,
+            width: 60,
+            borderRadius: 30,
+            marginTop: 0,
+            marginBottom: 0,
+            backgroundColor: theme.colors.primaryContainer,
+          }}
+          disabled={loading || !connected}
+          onPress={syncData}
+          icon="sync"
+        />
       </View>
-      <FlatList
-        data={data}
-        style={{ width: '100%' }}
-        renderItem={({ item }) => (
-          <List.Item
-            title={item.name}
-            description={item.type}
-            onPress={() => {
-              // navigation.navigate('Store', {
-              //   storeId: item.id,
-              // });
-            }}
-            left={props => <List.Icon {...props} icon="store" />}
-          />
-        )}
-      />
+      {lastSynced && !loading && (
+        <Text style={{ margin: 10 }}>
+          Last Synced: {getFormattedDate(lastSynced)}
+        </Text>
+      )}
+      {loading && <Loader />}
+      {!loading && (
+        <FlatList
+          data={data}
+          style={{ width: '100%' }}
+          renderItem={({ item }) => (
+            <List.Item
+              title={item.name}
+              description={item.type}
+              onPress={() => {
+                navigation.navigate('ShopDetail', {
+                  shop: item,
+                });
+              }}
+              left={props => <List.Icon {...props} icon="store" />}
+            />
+          )}
+        />
+      )}
     </View>
   );
 };

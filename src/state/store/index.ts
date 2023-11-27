@@ -23,7 +23,7 @@ const persistConfig: PersistConfig<RootState> = {
   key: 'root',
   version: 0,
   storage: reduxStorage,
-  whitelist: ['auth', 'data'],
+  whitelist: ['auth', 'data', 'visit'],
   stateReconciler: autoMergeLevel2,
 };
 
