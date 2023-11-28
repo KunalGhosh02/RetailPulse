@@ -10,6 +10,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppDispatch } from '../state/store';
 import { addVisit } from '../state/slices/visit';
+import { getFormattedDate } from '../../utils/date';
 
 type CaptureShopNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -114,12 +115,14 @@ const CaptureShopScreen: React.FC<CaptureShopScreenProps> = ({
     if (!photo) {
       return;
     }
+    const time = new Date().toISOString();
     dispatch(
       addVisit({
         filePath: photo?.path,
         storeId: shopId,
-        time: new Date().toISOString(),
+        time,
         fileName: photo.path.split('/').pop() || '',
+        visitName: `your visit at ${getFormattedDate(time)}`,
       }),
     );
     navigation.goBack();

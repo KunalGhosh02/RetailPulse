@@ -5,7 +5,6 @@ import { cloudStorage, firestore } from '../../../utils/firebase';
 import { FirebaseFirestoreTypes } from '@react-native-firebase/firestore';
 import BackgroundService from 'react-native-background-actions';
 import uuid from 'react-native-uuid';
-import { getFormattedDate } from '../../../utils/date';
 import { PURGE } from 'redux-persist';
 
 interface Visit {
@@ -20,6 +19,7 @@ export interface FileQueueItem {
   jobKey: string;
   storeId: string;
   fileName: string;
+  visitName: string;
   filePath: string;
   time: string;
   uploaded: boolean;
@@ -33,6 +33,7 @@ export interface VisitState {
     };
   };
   fileQueue: FileQueueItem[];
+  storesNotInSync: string[];
   loading: boolean;
   error: Nullable<string>;
 }
@@ -55,7 +56,7 @@ const uploadAndSaveToFirebase = async (item: FileQueueItem, userId: string) => {
     .doc(item.storeId)
     .collection('visits')
     .add({
-      name: item.fileName,
+      name: item.visitName,
       imageUrl: url,
       time: new Date(item.time),
     });
@@ -67,12 +68,13 @@ export const addVisit = createAsyncThunk<
     storeId: string;
     fileName: string;
     filePath: string;
+    visitName: string;
     time: string;
   }
 >(
   'visit/addVisit',
   async (
-    { fileName, filePath, storeId, time },
+    { fileName, filePath, storeId, time, visitName },
     { getState, rejectWithValue, dispatch },
   ) => {
     try {
@@ -82,6 +84,7 @@ export const addVisit = createAsyncThunk<
         fileName,
         filePath,
         time,
+        visitName,
         uploaded: false,
       };
       dispatch(visitActions.addVisitToQueue(fileQueueItem));
@@ -120,6 +123,7 @@ export const addVisit = createAsyncThunk<
             try {
               await uploadAndSaveToFirebase(item, s.auth.user?.uid!);
               dispatch(visitActions.markItemComplete(item));
+              dispatch(visitActions.addStoreToNotInSync(item.storeId));
               console.log('Uploaded file', item.fileName);
             } catch (error) {
               // TODO: Send error to local notification
@@ -155,7 +159,7 @@ export const fetchVisitData = createAsyncThunk<
   { storeId: string }
 >(
   'visit/fetchVisitData',
-  async ({ storeId }, { rejectWithValue, getState }) => {
+  async ({ storeId }, { rejectWithValue, getState, dispatch }) => {
     try {
       const state = getState() as RootState;
 
@@ -176,6 +180,8 @@ export const fetchVisitData = createAsyncThunk<
         synced: true,
       }));
 
+      dispatch(visitActions.removeStoreFromNotInSync(storeId));
+
       return { storeId, visits };
     } catch (error: any) {
       Toast.show({
@@ -193,6 +199,7 @@ const initialState: VisitState = {
   loading: false,
   error: null,
   fileQueue: [],
+  storesNotInSync: [],
 };
 
 const visitSlice = createSlice({
@@ -200,10 +207,13 @@ const visitSlice = createSlice({
   initialState,
   reducers: {
     addVisitToQueue: (state, action: PayloadAction<FileQueueItem>) => {
+      if (!state.visits[action.payload.storeId]) {
+        state.visits[action.payload.storeId] = { data: [], lastSynced: null };
+      }
       state.visits[action.payload.storeId].data = [
         {
           id: action.payload.jobKey,
-          name: `your visit at ${getFormattedDate(action.payload.time)}`,
+          name: action.payload.visitName,
           imageUrl: `file://${action.payload.filePath}`,
           time: action.payload.time,
           synced: false,
@@ -226,6 +236,16 @@ const visitSlice = createSlice({
           state.visits[action.payload.storeId].data[index].synced = true;
         }
       });
+    },
+    addStoreToNotInSync: (state, action: PayloadAction<string>) => {
+      if (!state.storesNotInSync.includes(action.payload)) {
+        state.storesNotInSync.push(action.payload);
+      }
+    },
+    removeStoreFromNotInSync: (state, action: PayloadAction<string>) => {
+      state.storesNotInSync = state.storesNotInSync.filter(
+        storeId => storeId !== action.payload,
+      );
     },
   },
   extraReducers: builder => {

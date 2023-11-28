@@ -97,7 +97,7 @@ const ShopScreen: React.FC<ShopDetailProps> = ({ navigation, route }) => {
   const { shop } = route.params;
   const { hasPermission, requestPermission } = useCameraPermission();
   const dispatch = useAppDispatch();
-  const { visits, loading } = useSelector(selectVisitState);
+  const { visits, loading, storesNotInSync } = useSelector(selectVisitState);
   const [modalVisible, setModalVisible] = React.useState(false);
 
   const checkPermission = async () => {
@@ -117,10 +117,13 @@ const ShopScreen: React.FC<ShopDetailProps> = ({ navigation, route }) => {
   };
 
   useEffect(() => {
-    if (!visits[shop.id] && connected) {
+    if (
+      (!visits[shop.id]?.lastSynced || storesNotInSync.includes(shop.id)) &&
+      connected
+    ) {
       dispatch(fetchVisitData({ storeId: shop.id }));
     }
-  }, [dispatch, shop.id, visits, connected]);
+  }, [dispatch, shop.id, visits, connected, storesNotInSync]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
