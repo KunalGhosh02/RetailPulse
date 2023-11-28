@@ -117,9 +117,13 @@ export const addVisit = createAsyncThunk<
           console.log('Uploading files', itemsNotUploaded);
           for (let i = 0; i < itemsNotUploaded.length; i++) {
             const item = itemsNotUploaded[i];
-            await uploadAndSaveToFirebase(item, s.auth.user?.uid!);
-            dispatch(visitActions.markItemComplete(item));
-            console.log('Uploaded file', item.fileName);
+            try {
+              await uploadAndSaveToFirebase(item, s.auth.user?.uid!);
+              dispatch(visitActions.markItemComplete(item));
+              console.log('Uploaded file', item.fileName);
+            } catch (error) {
+              // TODO: Send error to local notification
+            }
           }
           await sleep(1000);
         }
