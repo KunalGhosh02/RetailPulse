@@ -69,8 +69,10 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     fontSize: 18,
     fontWeight: 'bold',
+    color: 'black',
   },
   listStyle: { width: '100%', marginBottom: 70, overflow: 'scroll' },
+  text: { color: 'gray' },
   fab: {
     position: 'absolute',
     margin: 16,
@@ -142,13 +144,13 @@ const ShopScreen: React.FC<ShopDetailProps> = ({ navigation, route }) => {
         </Appbar.Header>
         {!connected && <OfflineModeBanner />}
         <View style={styles.bodyWrapper}>
-          <Card>
+          <Card theme={theme}>
             <Card.Title title={shop.name} subtitle={shop.type} />
             <Card.Content>
-              <Text>ID: {shop.id}</Text>
-              <Text>Address: {shop.address}</Text>
-              <Text>Area: {shop.area}</Text>
-              <Text>Route: {shop.route}</Text>
+              <Text style={styles.text}>ID: {shop.id}</Text>
+              <Text style={styles.text}>Address: {shop.address}</Text>
+              <Text style={styles.text}>Area: {shop.area}</Text>
+              <Text style={styles.text}>Route: {shop.route}</Text>
             </Card.Content>
           </Card>
           <Text style={styles.listHeader}>

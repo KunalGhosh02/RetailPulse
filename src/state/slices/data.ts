@@ -1,5 +1,3 @@
-// dataSlice.ts
-
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../store';
 import { firestore } from '../../../utils/firebase';
