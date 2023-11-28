@@ -6,6 +6,7 @@ import { FirebaseFirestoreTypes } from '@react-native-firebase/firestore';
 import BackgroundService from 'react-native-background-actions';
 import uuid from 'react-native-uuid';
 import { getFormattedDate } from '../../../utils/date';
+import { PURGE } from 'redux-persist';
 
 interface Visit {
   id: string;
@@ -195,13 +196,16 @@ const visitSlice = createSlice({
   initialState,
   reducers: {
     addVisitToQueue: (state, action: PayloadAction<FileQueueItem>) => {
-      state.visits[action.payload.storeId].data.push({
-        id: action.payload.jobKey,
-        name: `your visit at ${getFormattedDate(action.payload.time)}`,
-        imageUrl: `file://${action.payload.filePath}`,
-        time: action.payload.time,
-        synced: false,
-      });
+      state.visits[action.payload.storeId].data = [
+        {
+          id: action.payload.jobKey,
+          name: `your visit at ${getFormattedDate(action.payload.time)}`,
+          imageUrl: `file://${action.payload.filePath}`,
+          time: action.payload.time,
+          synced: false,
+        },
+        ...state.visits[action.payload.storeId].data,
+      ];
       state.fileQueue.push(action.payload);
     },
     clearFileQueue: state => {
@@ -241,7 +245,8 @@ const visitSlice = createSlice({
         });
         state.loading = false;
         state.error = action.error.message ?? 'Could not fetch data';
-      });
+      })
+      .addCase(PURGE, _ => initialState);
   },
 });
 

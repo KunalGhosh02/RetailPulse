@@ -1,10 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { Keyboard, View } from 'react-native';
+import { Keyboard, StyleSheet, View } from 'react-native';
 
 import { Text, TextInput, Button, useTheme } from 'react-native-paper';
 import { appStore } from '../state/store';
 import { selectAuth, signInWithFirebase } from '../state/slices';
 import { useSelector } from 'react-redux';
+
+const styles = StyleSheet.create({
+  rootView: { flex: 1, justifyContent: 'center', padding: 16 },
+  appName: { fontSize: 32, marginBottom: 16 },
+  loginText: {
+    fontSize: 24,
+    marginBottom: 16,
+  },
+  inputMargin: {
+    marginBottom: 16,
+  },
+  loginButton: { borderRadius: 5, padding: 6, marginTop: 16 },
+});
 
 const AuthScreen = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -30,15 +43,20 @@ const AuthScreen = () => {
   };
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', padding: 16 }}>
-      <Text style={{ fontSize: 24, marginBottom: 16 }}>Login</Text>
+    <View style={styles.rootView}>
+      <Text style={{ ...styles.appName, color: theme.colors.primary }}>
+        Retail Pulse (Demo)
+      </Text>
+      <Text style={{ ...styles.loginText, color: theme.colors.secondary }}>
+        Login
+      </Text>
       <TextInput
         mode="outlined"
         label="Email"
         placeholder="you@retailpulse.com"
         value={email}
         onChangeText={text => setEmail(text)}
-        style={{ marginBottom: 16 }}
+        style={styles.inputMargin}
       />
       <TextInput
         mode="outlined"
@@ -46,7 +64,7 @@ const AuthScreen = () => {
         placeholder="Super secret password"
         secureTextEntry={!showPassword}
         onChangeText={text => setPassword(text)}
-        style={{ marginBottom: 16 }}
+        style={styles.inputMargin}
         right={
           <TextInput.Icon
             icon={showPassword ? 'eye-off' : 'eye'}
@@ -55,16 +73,10 @@ const AuthScreen = () => {
         }
       />
       <Button
-        mode="outlined"
+        mode="contained"
         loading={authState.loading}
         disabled={buttonDisabled || authState.loading}
-        style={{
-          backgroundColor:
-            buttonDisabled || authState.loading
-              ? theme.colors.surfaceDisabled
-              : theme.colors.primary,
-        }}
-        labelStyle={{ color: 'white' }}
+        style={styles.loginButton}
         onPress={handleLogin}>
         Sign In
       </Button>

@@ -1,7 +1,8 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { auth } from '../../../utils/firebase';
-import { RootState } from '../store';
+import { RootState, persistor } from '../store';
 import Toast from 'react-native-toast-message';
+import { PURGE } from 'redux-persist';
 
 interface User {
   uid: Nullable<string>;
@@ -57,7 +58,10 @@ export const signInWithFirebase = createAsyncThunk<
 
 export const signOutWithFirebase = createAsyncThunk<void, void>(
   'auth/signOut',
-  async () => await auth.signOut(),
+  async () => {
+    await auth.signOut();
+    persistor.purge();
+  },
 );
 
 const authSlice = createSlice({
@@ -104,7 +108,8 @@ const authSlice = createSlice({
         });
         state.loading = false;
         state.error = action.payload as string;
-      });
+      })
+      .addCase(PURGE, _ => initialState);
   },
 });
 

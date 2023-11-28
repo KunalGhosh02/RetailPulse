@@ -10,6 +10,9 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppDispatch } from '../state/store';
 import { addVisit } from '../state/slices/visit';
+import OfflineModeBanner from '../components/OfflineRibbon';
+import { useSelector } from 'react-redux';
+import { selectConnectivityState } from '../state/slices';
 
 type CaptureShopNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -23,6 +26,62 @@ interface CaptureShopScreenProps {
   route: CaptureScreenRouteProp;
 }
 
+const styles = StyleSheet.create({
+  rootView: {
+    flex: 1,
+    justifyContent: 'flex-start',
+  },
+  appBarHeader: {
+    width: '100%',
+    flexDirection: 'row',
+  },
+  appBarContentTitle: {
+    color: 'white',
+  },
+  bodyWrapper: { height: '100%' },
+  previewImageWrapper: {
+    borderRadius: 15,
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  previewImage: { borderRadius: 15, width: '70%', height: '80%' },
+  buttonWrapper: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    bottom: 10,
+    borderRadius: 10,
+    marginBottom: 10,
+    marginLeft: 10,
+    marginRight: 10,
+  },
+  buttonLeft: { flex: 1, marginRight: 5 },
+  buttonRight: {
+    flex: 1,
+    marginLeft: 5,
+  },
+
+  camera: { flex: 1 },
+  cameraBackButton: {
+    flex: 0,
+    height: 60,
+    width: 60,
+    borderRadius: 30,
+    position: 'absolute',
+    top: 0,
+  },
+  cameraCaptureButton: {
+    flex: 1,
+    height: 50,
+    width: 50,
+    borderRadius: 30,
+
+    position: 'absolute',
+    bottom: 50,
+    alignSelf: 'center',
+  },
+});
+
 const CaptureShopScreen: React.FC<CaptureShopScreenProps> = ({
   navigation,
   route,
@@ -35,6 +94,7 @@ const CaptureShopScreen: React.FC<CaptureShopScreenProps> = ({
   const [photo, setPhoto] = React.useState<Nullable<PhotoFile>>(null);
   const theme = useTheme();
   const dispatch = useAppDispatch();
+  const connected = useSelector(selectConnectivityState);
   const { shopId } = route.params;
 
   const handleCapture = async () => {
@@ -74,18 +134,13 @@ const CaptureShopScreen: React.FC<CaptureShopScreenProps> = ({
   }
   if (photo) {
     return (
-      <SafeAreaView
-        style={{
-          flex: 1,
-          justifyContent: 'flex-start',
-        }}>
+      <SafeAreaView style={styles.rootView}>
         <View>
           <Appbar.Header
             theme={theme}
             style={{
+              ...styles.appBarHeader,
               backgroundColor: theme.colors.primary,
-              width: '100%',
-              flexDirection: 'row',
             }}>
             <Appbar.BackAction
               color="white"
@@ -93,33 +148,22 @@ const CaptureShopScreen: React.FC<CaptureShopScreenProps> = ({
                 navigation.goBack();
               }}
             />
-            <Appbar.Content titleStyle={{ color: 'white' }} title="Add Visit" />
+            <Appbar.Content
+              titleStyle={styles.appBarContentTitle}
+              title="Add Visit"
+            />
+            {connected && <OfflineModeBanner />}
           </Appbar.Header>
-          <View style={{ height: '100%' }}>
-            <View
-              style={{
-                borderRadius: 15,
-                width: '100%',
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}>
+          <View style={styles.bodyWrapper}>
+            <View style={styles.previewImageWrapper}>
               <Image
-                style={{ borderRadius: 15, width: '70%', height: '80%' }}
+                style={styles.previewImage}
                 source={{ uri: 'file://' + photo.path }}
               />
             </View>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                bottom: 10,
-                borderRadius: 10,
-                marginBottom: 10,
-                marginLeft: 10,
-                marginRight: 10,
-              }}>
+            <View style={styles.buttonWrapper}>
               <Button
-                style={{ flex: 1, marginRight: 5 }}
+                style={styles.buttonLeft}
                 icon="camera"
                 mode="outlined"
                 onPress={() => {
@@ -128,10 +172,7 @@ const CaptureShopScreen: React.FC<CaptureShopScreenProps> = ({
                 Retake
               </Button>
               <Button
-                style={{
-                  flex: 1,
-                  marginLeft: 5,
-                }}
+                style={styles.buttonRight}
                 icon="check"
                 mode="contained"
                 onPress={() => handleSubmitVisit()}>
@@ -148,19 +189,14 @@ const CaptureShopScreen: React.FC<CaptureShopScreenProps> = ({
     <View style={StyleSheet.absoluteFill}>
       <Camera
         isActive={isActive}
-        style={{ flex: 1 }}
+        style={styles.camera}
         photo={true}
         device={device}
         ref={cameraRef}
       />
       <IconButton
         style={{
-          flex: 0,
-          height: 60,
-          width: 60,
-          borderRadius: 30,
-          position: 'absolute',
-          top: 0,
+          ...styles.cameraBackButton,
           backgroundColor: theme.colors.primaryContainer,
         }}
         icon="arrow-left"
@@ -173,14 +209,8 @@ const CaptureShopScreen: React.FC<CaptureShopScreenProps> = ({
           handleCapture();
         }}
         style={{
-          flex: 1,
-          height: 50,
-          width: 50,
-          borderRadius: 30,
+          ...styles.cameraCaptureButton,
           backgroundColor: theme.colors.primary,
-          position: 'absolute',
-          bottom: 50,
-          alignSelf: 'center',
         }}
       />
     </View>
