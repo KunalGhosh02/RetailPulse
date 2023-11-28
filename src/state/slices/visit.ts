@@ -41,9 +41,9 @@ const sleep = (t: number) =>
   new Promise<void>(resolve => setTimeout(() => resolve(), t));
 
 const uploadAndSaveToFirebase = async (item: FileQueueItem, userId: string) => {
-  const fName = item.fileName.split('/').pop()!;
+  const fileKey = item.fileName.split('/').pop()!;
   const storageRef = cloudStorage.ref(
-    `${userId}/visits/${item.storeId}/${fName}`,
+    `${userId}/visits/${item.storeId}/${fileKey}`,
   );
 
   await storageRef.putFile(item.filePath);
@@ -55,7 +55,7 @@ const uploadAndSaveToFirebase = async (item: FileQueueItem, userId: string) => {
     .doc(item.storeId)
     .collection('visits')
     .add({
-      name: fName,
+      name: item.fileName,
       imageUrl: url,
       time: new Date(item.time),
     });
