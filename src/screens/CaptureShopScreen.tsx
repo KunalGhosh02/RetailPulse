@@ -10,9 +10,6 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppDispatch } from '../state/store';
 import { addVisit } from '../state/slices/visit';
-import OfflineModeBanner from '../components/OfflineRibbon';
-import { useSelector } from 'react-redux';
-import { selectConnectivityState } from '../state/slices';
 
 type CaptureShopNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -94,7 +91,6 @@ const CaptureShopScreen: React.FC<CaptureShopScreenProps> = ({
   const [photo, setPhoto] = React.useState<Nullable<PhotoFile>>(null);
   const theme = useTheme();
   const dispatch = useAppDispatch();
-  const connected = useSelector(selectConnectivityState);
   const { shopId } = route.params;
 
   const handleCapture = async () => {
@@ -152,7 +148,6 @@ const CaptureShopScreen: React.FC<CaptureShopScreenProps> = ({
               titleStyle={styles.appBarContentTitle}
               title="Add Visit"
             />
-            {connected && <OfflineModeBanner />}
           </Appbar.Header>
           <View style={styles.bodyWrapper}>
             <View style={styles.previewImageWrapper}>

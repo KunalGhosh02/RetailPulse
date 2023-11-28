@@ -113,10 +113,10 @@ const ShopScreen: React.FC<ShopDetailProps> = ({ navigation, route }) => {
   };
 
   useEffect(() => {
-    if (!visits[shop.id]) {
+    if (!visits[shop.id] && connected) {
       dispatch(fetchVisitData({ storeId: shop.id }));
     }
-  }, [dispatch, shop.id, visits]);
+  }, [dispatch, shop.id, visits, connected]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -151,8 +151,8 @@ const ShopScreen: React.FC<ShopDetailProps> = ({ navigation, route }) => {
           </Card>
           <Text style={styles.listHeader}>
             Visits
-            {loading && ' (Syncing)'}
-            {visits[shop.id].lastSynced &&
+            {loading && connected && ' (Syncing)'}
+            {visits[shop.id]?.lastSynced &&
               ` (Last Synced : ${getFormattedDate(
                 visits[shop.id]?.lastSynced,
               )})`}
