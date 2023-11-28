@@ -57,10 +57,12 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   bodyWrapper: {
-    marginTop: 8,
-    marginRight: 8,
-    marginLeft: 8,
+    paddingTop: 8,
+    paddingRight: 8,
+    paddingLeft: 8,
     flexDirection: 'column',
+    width: '100%',
+    height: '100%',
   },
   listHeader: {
     marginTop: 8,
@@ -68,7 +70,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
-  listStyle: { width: '100%', marginBottom: 70 },
+  listStyle: { width: '100%', marginBottom: 70, overflow: 'scroll' },
   fab: {
     position: 'absolute',
     margin: 16,
@@ -165,7 +167,6 @@ const ShopScreen: React.FC<ShopDetailProps> = ({ navigation, route }) => {
           )}
           {!loading && (
             <FlatList
-              nestedScrollEnabled
               data={visits[shop.id]?.data}
               style={styles.listStyle}
               renderItem={({ item }) => (
