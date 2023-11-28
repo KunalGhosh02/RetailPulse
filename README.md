@@ -23,18 +23,30 @@ Retail Pulse is a React Native mobile application designed to collect images fro
 
 ### Store List and Search
 
-<img src="screenshots/store_list.png" alt="Login Screens" width="200"/>
-<img src="screenshots/store_search.png" alt="Login Screens" width="200"/>
-<img src="screenshots/store_filter.png" alt="Login Screens" width="200"/>
+<p float="left">
+    <img src="screenshots/store_list.png" alt="Login Screens" width="200"/>
+    <img src="screenshots/store_search.png" alt="Login Screens" width="200"/>
+    <img src="screenshots/store_filter.png" alt="Login Screens" width="200"/>
+</p>
+
+
 
 ### Image Capture and Upload
 
+<p float="left">
 <img src="screenshots/offline_visit_queue.png" alt="Login Screens" width="200"/>
 <img src="screenshots/image_capture.png" alt="Login Screens" width="200"/>
+</p>
+
+
 
 ### Sync and Offline Support
 
+<p float="left">
 <img src="screenshots/bg_service.png" alt="Login Screens" width="200"/>
+</p>
+
+
 
 ## How to Run
 
