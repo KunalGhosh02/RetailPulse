@@ -12,7 +12,7 @@ function App(): JSX.Element {
     <>
       <Provider store={appStore}>
         <PersistGate persistor={persistor}>
-          <PaperProvider>
+          <PaperProvider theme={{ dark: false }}>
             <NavigationContainer>
               <AppStackNavigator />
             </NavigationContainer>
